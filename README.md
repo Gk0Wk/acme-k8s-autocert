@@ -1,8 +1,6 @@
 # AutoCert - 自定义的Kubernetes证书管理器
 
-AutoCert 是一个类似 cert-manager 的自定义Kubernetes证书管理器，它使用 acme.sh 来自动签发和续签 Let's Encrypt 证书。本项目专为需要定制证书管理流程的Kubernetes环境设计，提供了完整的证书生命周期管理功能。
-
-项目地址: https://github.com/Gk0Wk/acme-k8s-autocert
+AutoCert 是一个类似 cert-manager 的自定义Kubernetes证书管理器，它使用 acme.sh 来自动签发和续签 Let's Encrypt 等服务商的证书。本项目专为需要定制证书管理流程的Kubernetes环境设计，提供了完整的证书生命周期管理功能。
 
 ## 目录
 
@@ -26,15 +24,14 @@ AutoCert 是一个类似 cert-manager 的自定义Kubernetes证书管理器，�
    8. [开发者指南](#开发者指南)
       1. [代码结构](#代码结构)
       2. [贡献指南](#贡献指南)
-   9. [License](#license)
-   10. [使用Helm部署](#使用helm部署)
-       1. [前提条件](#前提条件-1)
-       2. [使用Helm部署步骤](#使用helm部署步骤)
-       3. [Helm Chart参数说明](#helm-chart参数说明)
-       4. [Helm Chart高级配置](#helm-chart高级配置)
-          1. [使用现有的Secret](#使用现有的secret)
-          2. [配置资源限制](#配置资源限制)
-          3. [配置节点选择器和容忍度](#配置节点选择器和容忍度)
+   9. [使用Helm部署](#使用helm部署)
+      1. [前提条件](#前提条件-1)
+      2. [使用Helm部署步骤](#使用helm部署步骤)
+      3. [Helm Chart参数说明](#helm-chart参数说明)
+      4. [Helm Chart高级配置](#helm-chart高级配置)
+         1. [使用现有的Secret](#使用现有的secret)
+         2. [配置资源限制](#配置资源限制)
+         3. [配置节点选择器和容忍度](#配置节点选择器和容忍度)
 
 ## 特性
 
@@ -216,22 +213,6 @@ src/
 3. 提交更改 (`git commit -m 'Add some amazing feature'`)
 4. 推送到分支 (`git push origin feature/amazing-feature`)
 5. 创建Pull Request
-
-## License
-
-MIT License
-
-Copyright (c) 2025 Your Name
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
 
 ## 使用Helm部署
 
