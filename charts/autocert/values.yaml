@@ -1,0 +1,117 @@
+# AutoCert 的默认配置值
+nameOverride: ""
+fullnameOverride: ""
+
+# 镜像配置
+image:
+  repository: registry.cn-hangzhou.aliyuncs.com/sttot/acme-k8s-cert
+  pullPolicy: IfNotPresent
+  # 如果你想使用特定版本，可以设置 tag
+  tag: "0.0.1"
+
+# 镜像拉取密钥
+imagePullSecrets: []
+
+# 部署配置
+replicaCount: 1
+revisionHistoryLimit: 3
+
+# 服务配置
+service:
+  enabled: false
+  type: ClusterIP
+  port: 80
+
+# Pod 资源请求与限制
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# 证书配置
+certificates:
+  # 存储证书上下文的Secret名称
+  contextSecretName: "acmesh-autocert-context"
+  # 检查证书过期的间隔时间（秒、分、时、天）
+  checkInterval: "24h"
+  # 自动配置示例证书
+  config:
+    enabled: false
+    # 示例配置，注意：生产环境应该用您自己的真实配置替换
+    config: |-
+      domains:
+        - name: example.com
+          domains:
+            - "*.example.com"
+            - "example.com"
+          dns: "dns_cf"
+          server: "https://acme-v02.api.letsencrypt.org/directory"
+          email: "admin@example.com"
+          secrets:
+            - namespace: "default"
+              name: "example-com-tls"
+          envs:
+            CF_Key: "your-cloudflare-api-key"
+            CF_Email: "your-cloudflare-email"
+
+  # 现有的证书配置Secret引用
+  existingSecret:
+    enabled: false
+    name: "autocert-config"
+    namespace: null
+    key: "config.yaml"
+
+# RBAC 配置
+rbac:
+  create: true
+  serviceAccount:
+    create: true
+    name: "autocert-sa"
+  # 使用 ClusterRole 而不是 Role（建议用于多命名空间操作）
+  clusterWide: true
+
+# 命名空间配置
+namespaceOverride: ""
+
+# Pod 节点选择器
+nodeSelector: {}
+
+# Pod 容忍配置
+tolerations: []
+
+# Pod 亲和性配置
+affinity: {}
+
+# 持久化存储配置（用于acme.sh账户）
+persistence:
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  mountPath: /acme.sh
+
+# acme.sh 脚本配置
+acme:
+  installEmail: "admin@example.com"
+  outputDir: "/tmp/certs"
+
+# 附加环境变量
+extraEnv: []
+# - name: TZ
+#   value: Asia/Shanghai
+
+# 附加卷挂载
+extraVolumeMounts: []
+# - name: config-volume
+#   mountPath: /etc/config
+
+# 附加卷
+extraVolumes: []
+
+# - name: config-volume
+#   configMap:
+#     name: special-config

@@ -1,0 +1,49 @@
+感谢安装 {{ .Chart.Name }} - 自定义Kubernetes证书管理器!
+
+您的应用程序已成功部署。
+
+部署详情:
+{{- if .Values.namespaceOverride }}
+- 命名空间: {{ .Values.namespaceOverride }}
+{{- else }}
+- 命名空间: {{ .Release.Namespace }}
+{{- end }}
+- 应用名称: {{ include "autocert.fullname" . }}
+{{- if .Values.service.enabled }}
+- 服务名称: {{ include "autocert.fullname" . }}
+- 服务类型: {{ .Values.service.type }}
+- 服务端口: {{ .Values.service.port }}
+{{- end }}
+
+要查看应用程序的运行状态，请执行以下命令:
+
+  kubectl get pods -n {{ include "autocert.namespace" . }} -l "app.kubernetes.io/name={{ include "autocert.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+要查看证书管理器的日志，请执行以下命令:
+
+  kubectl logs -f -l "app.kubernetes.io/name={{ include "autocert.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -n {{ include "autocert.namespace" . }}
+
+{{- if not .Values.certificates.existingSecret.enabled }}
+证书配置已创建为Secret，可以通过以下方式查看:
+
+  kubectl get secret {{ .Values.certificates.existingSecret.name | default (printf "%s-config" (include "autocert.fullname" .)) }} -n {{ include "autocert.namespace" . }} -o yaml
+{{- else }}
+AutoCert 正在使用现有的配置Secret:
+- 名称: {{ .Values.certificates.existingSecret.name }}
+- 命名空间: {{ .Values.certificates.existingSecret.namespace | default (include "autocert.namespace" .) }}
+- 配置键: {{ .Values.certificates.existingSecret.key | default "config.yaml" }}
+{{- end }}
+
+证书上下文数据存储在以下Secret中:
+- 名称: {{ .Values.certificates.contextSecretName | default "acmesh-autocert-context" }}
+- 命名空间: {{ include "autocert.namespace" . }}
+
+{{- if .Values.persistence.enabled }}
+acme.sh数据使用持久卷存储:
+{{- if .Values.persistence.existingClaim }}
+- 使用已存在的PVC: {{ .Values.persistence.existingClaim }}
+{{- else }}
+- PVC名称: {{ printf "%s-acme" (include "autocert.fullname" .) }}
+- 存储大小: {{ .Values.persistence.size }}
+{{- end }}
+{{- end }}

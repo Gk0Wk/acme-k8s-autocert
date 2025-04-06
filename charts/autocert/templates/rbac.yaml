@@ -1,0 +1,77 @@
+{{- if .Values.rbac.create }}
+{{- $fullName := include "autocert.fullname" . -}}
+{{- $serviceAccountName := .Values.rbac.serviceAccount.name | default $fullName -}}
+
+{{- if .Values.rbac.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $serviceAccountName }}
+  namespace: {{ include "autocert.namespace" . }}
+  labels:
+    {{- include "autocert.labels" . | nindent 4 }}
+---
+{{- end }}
+
+{{- if .Values.rbac.clusterWide }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "autocert.labels" . | nindent 4 }}
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "autocert.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $fullName }}
+subjects:
+- kind: ServiceAccount
+  name: {{ $serviceAccountName }}
+  namespace: {{ include "autocert.namespace" . }}
+{{- else }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ include "autocert.namespace" . }}
+  labels:
+    {{- include "autocert.labels" . | nindent 4 }}
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ include "autocert.namespace" . }}
+  labels:
+    {{- include "autocert.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $fullName }}
+subjects:
+- kind: ServiceAccount
+  name: {{ $serviceAccountName }}
+  namespace: {{ include "autocert.namespace" . }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,15 @@
+apiVersion: v2
+name: acme-autocert
+description: 自定义的Kubernetes证书管理器，基于acme.sh自动签发和续签Let's Encrypt证书
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+- certificate
+- acme
+- letsencrypt
+- tls
+maintainers:
+- name: Gk0Wk
+  email: nmg_wk@yeah.net
+home: https://github.com/Gk0Wk/acme-k8s-autocert

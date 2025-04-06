@@ -1,0 +1,19 @@
+{{- if not .Values.certificates.existingSecret.enabled }}
+{{- $fullName := include "autocert.fullname" . -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.certificates.existingSecret.name | default (printf "%s-config" $fullName) }}
+  namespace: {{ include "autocert.namespace" . }}
+  labels:
+    {{- include "autocert.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  {{ .Values.certificates.existingSecret.key | default "config.yaml" }}: |-
+    {{- if .Values.certificates.config.enabled }}
+    {{- .Values.certificates.config.config | nindent 4 }}
+    {{- else }}
+    # 在此处添加您的证书配置
+    domains: {}
+    {{- end }}
+{{- end }}

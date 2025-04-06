@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "autocert.fullname" . }}
+  namespace: {{ include "autocert.namespace" . }}
+  labels:
+    {{- include "autocert.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "autocert.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "autocert.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "autocert.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            # 核心环境变量
+            - name: CONFIG_SECRET_NAME
+              value: {{ .Values.certificates.existingSecret.name | default (printf "%s-config" (include "autocert.fullname" .)) | quote }}
+            - name: CONFIG_SECRET_NAMESPACE
+              value: {{ .Values.certificates.existingSecret.namespace | default (include "autocert.namespace" .) | quote }}
+            - name: CONFIG_MAP_KEY
+              value: {{ .Values.certificates.existingSecret.key | default "config.yaml" | quote }}
+            - name: CONTEXT_SECRET_NAME
+              value: {{ .Values.certificates.contextSecretName | default "acmesh-autocert-context" | quote }}
+            - name: CONTEXT_SECRET_NAMESPACE
+              value: {{ include "autocert.namespace" . | quote }}
+            - name: CHECK_INTERVAL
+              value: {{ .Values.certificates.checkInterval | quote }}
+            - name: TZ
+              value: "Asia/Shanghai"
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            # acme.sh 脚本和账户数据目录
+            - name: acme-sh-data
+              mountPath: {{ .Values.persistence.mountPath | quote }}
+            # 临时证书输出目录
+            - name: cert-output
+              mountPath: {{ .Values.acme.outputDir | quote }}
+            # 挂载主机的时间和时区
+            - name: host-time
+              mountPath: /etc/localtime
+              readOnly: true
+            - name: host-timezone
+              mountPath: /etc/timezone
+              readOnly: true
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        # acme.sh 脚本和账户数据卷
+        - name: acme-sh-data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (printf "%s-acme" (include "autocert.fullname" .)) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        # 临时证书输出目录
+        - name: cert-output
+          emptyDir: {}
+        # 挂载主机的时间和时区
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+        - name: host-timezone
+          hostPath:
+            path: /etc/timezone
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
